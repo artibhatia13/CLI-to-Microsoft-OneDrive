@@ -83,6 +83,18 @@ public class App
 		FileUploadResult result = getResultWhenDone(onedrive.uploadFile(graphClient, filePath, onedrivepath), NULL);
 		printResult(result);
     }
+	
+    private static void downloadFile() throws ExecutionException, InterruptedException {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Enter id of file to be downloaded: ");
+		String fileId = sc.nextLine();
+		System.out.println("Starting download");
+		Result result = getResultWhenDone(box.downloadFile(api, fileId));
+		printResult(result);
+    }
+	
+	
     
     private static void renameFile() throws ExecutionException, InterruptedException {
       Scanner sc = new Scanner(System.in);      
