@@ -90,7 +90,7 @@ public class App
 		System.out.print("Enter id of file to be downloaded: ");
 		String fileId = sc.nextLine();
 		System.out.println("Starting download");
-		Result result = getResultWhenDone(box.downloadFile(api, fileId));
+		Result result = getResultWhenDone(onedrive.downloadFile(graphClient, fileId));
 		printResult(result);
     }
 	
