@@ -108,6 +108,51 @@ public class Onedrive implements ICloudIO {
 		return renameFileFutureTask;
 	}
 	
+	
+	
+	
+	public FutureTask<Result> downloadFile(GraphServiceClient graphClient, String fileId) {
+    	Result result = new Result();
+    	
+    	FutureTask<Result> downloadFileFutureTask = new FutureTask<>(() -> {
+    		try {
+    			InputStream stream = (InputStream) graphClient.customRequest("/me/drive/items/DF40F1033C268359!125/content", InputStream.class)
+     			                             .buildRequest()
+     			                             .get();
+                             try {
+                             FileOutputStream fileOS = new FileOutputStream("C:/Users/User/Documents/image_test.png"); {
+        	             byte data[] = new byte[1024];
+        	             int byteContent;
+        	             while ((byteContent = stream.read(data, 0, 1024)) != -1) {
+        	             fileOS.write(data, 0, byteContent);
+        	            }
+        	          } 
+                        }
+                          catch(IOException e) {
+        	            System.out.println(e);
+        	          }
+    		} 
+		  catch(GraphServiceException onedriveError) {
+            	result.setErrorMsg(onedriveError.getMessage());
+            	result.setErrorCode(1);
+            	result.setShortMsg(String.valueOf(onedriveError.getResponseCode()));
+            	StringWriter errors = new StringWriter();
+            	onedriveError.printStackTrace(new PrintWriter(errors));
+                result.setLongMsg(errors.toString());
+            } 
+			
+    		catch(Exception e) {
+    			result.setErrorMsg(e.getMessage());
+                result.setErrorCode(1);
+                result.setShortMsg(Arrays.toString(e.getStackTrace()));
+                StringWriter errors = new StringWriter();
+                e.printStackTrace(new PrintWriter(errors));
+                result.setLongMsg(errors.toString());
+    		}
+    	}, result);
+    	return downloadFileFutureTask;
+    }
+	
 //	public FutureTask<CreateDirectoryResult> createDirectory(GraphServiceClient graphClient, String directoryName, String parentId) {
 //		CreateDirectoryResult result = new CreateDirectoryResult();
 //		
