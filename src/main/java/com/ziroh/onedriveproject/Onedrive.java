@@ -114,6 +114,7 @@ public class Onedrive implements ICloudIO {
 		return renameFileFutureTask;
 	}
 	
+<<<<<<< HEAD
 	public FutureTask<CreateDirectoryResult> createDirectory(GraphServiceClient graphClient, String directoryName, String parentId) {
 		CreateDirectoryResult result = new CreateDirectoryResult();
 		
@@ -211,6 +212,35 @@ public class Onedrive implements ICloudIO {
 					.post();
 				result.setErrorCode(0);
 			} catch(GraphServiceException onedriveError) {
+=======
+	
+	
+	
+	public FutureTask<Result> downloadFile(GraphServiceClient graphClient, String fileId) {
+    		Result result = new Result();
+    	//DF40F1033C268359!149
+    		FutureTask<Result> downloadFileFutureTask = new FutureTask<>(() -> {
+    		try {
+				InputStream stream = (InputStream) graphClient.customRequest("/me/drive/items/"+fileId+"/content", InputStream.class)
+     							.buildRequest()
+     							.get();
+				try {
+					FileOutputStream fileOS = new FileOutputStream("C:\\Users\\ADMIN\\Downloads\\onedriveContent.png"); {
+						byte data[] = new byte[1024];
+        	    				int byteContent;
+        	    				while ((byteContent = stream.read(data, 0, 1024)) != -1) {
+							fileOS.write(data, 0, byteContent);
+        	    				}
+        				} 
+					result.setErrorCode(0);
+	        		stream.close();
+         		}
+				catch(IOException e) {
+					System.out.println(e);
+        		}
+			} 
+			catch(GraphServiceException onedriveError) {
+>>>>>>> f4e345b8d6889663f826f9bddd948dd8a23e4342
             	result.setErrorMsg(onedriveError.getMessage());
             	result.setErrorCode(1);
             	result.setShortMsg(String.valueOf(onedriveError.getResponseCode()));
@@ -228,6 +258,49 @@ public class Onedrive implements ICloudIO {
 			}
 		}, result);
 		
+<<<<<<< HEAD
 		return copyDirectoryFutureTask;
 	}
 }
+=======
+		return downloadFileFutureTask;
+	}
+	
+	
+//	public FutureTask<CreateDirectoryResult> createDirectory(GraphServiceClient graphClient, String directoryName, String parentId) {
+//		CreateDirectoryResult result = new CreateDirectoryResult();
+//		
+//		FutureTask<CreateDirectoryResult> createDirectoryFutureTask = new FutureTask<>(() -> {
+//			try {
+//				BoxFolder parentFolder;
+//				if(parentId.equals("0"))
+//					parentFolder = BoxFolder.getRootFolder(api);
+//				else
+//					parentFolder = new BoxFolder(api, parentId);
+//				
+//				BoxFolder.Info childFolderInfo = parentFolder.createFolder(directoryName);
+//				System.out.println("\nID of the newly created directory: " + childFolderInfo.getID());
+//				result.setId(childFolderInfo.getID());
+//				result.setErrorCode(0);
+//			} catch(BoxAPIException boxError) {
+//            	result.setErrorMsg(boxError.getMessage());
+//            	result.setErrorCode(1);
+//            	result.setShortMsg(String.valueOf(boxError.getResponseCode()));
+//            	StringWriter errors = new StringWriter();
+//                boxError.printStackTrace(new PrintWriter(errors));
+//                result.setLongMsg(errors.toString());
+//            }
+//			catch(Exception e) {
+//				result.setErrorMsg(e.getMessage());
+//                result.setErrorCode(1);
+//                result.setShortMsg(Arrays.toString(e.getStackTrace()));
+//                StringWriter errors = new StringWriter();
+//                e.printStackTrace(new PrintWriter(errors));
+//                result.setLongMsg(errors.toString());
+//			}
+//		}, result);
+//	
+//		return createDirectoryFutureTask;
+//	}
+}
+>>>>>>> f4e345b8d6889663f826f9bddd948dd8a23e4342

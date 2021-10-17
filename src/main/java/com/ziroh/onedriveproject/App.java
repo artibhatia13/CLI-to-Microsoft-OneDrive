@@ -1,28 +1,14 @@
 package com.ziroh.onedriveproject;
 
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
-import com.microsoft.graph.models.DriveItem;
-import com.microsoft.graph.models.DriveItemCreateUploadSessionParameterSet;
-import com.microsoft.graph.models.DriveItemUploadableProperties;
-import com.microsoft.graph.models.FileSystemInfo;
-import com.microsoft.graph.models.UploadSession;
+import com.microsoft.graph.models.Drive;
 import com.microsoft.graph.models.User;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
-import com.microsoft.graph.requests.DriveItemContentStreamRequest;
 import com.microsoft.graph.requests.GraphServiceClient;
-import com.microsoft.graph.tasks.*;
-
-import okhttp3.Request;
-
 import com.azure.identity.InteractiveBrowserCredential;
 import com.azure.identity.InteractiveBrowserCredentialBuilder;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
 import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
@@ -54,25 +40,17 @@ public class App
     	final User me = graphClient.me().buildRequest().get();
     	
     	onedrive = new Onedrive();
-    	
+   	
 //    	renameFile();
 //    	uploadFile();
+<<<<<<< HEAD
 //    	createDirectory();
 //   	copyFile();
 		copyDirectory();    	
+=======
+    	downloadFile();
+>>>>>>> f4e345b8d6889663f826f9bddd948dd8a23e4342
     	
-    	//update
-//    	File file = new File("C:\\Users\\ADMIN\\Videos\\Captures\\testing.png");    	
-//    	byte[] fileContent = null;
-//		try {
-//			fileContent = Files.readAllBytes(file.toPath());
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}    	
-//		
-//		graphClient.me().drive().items("DF40F1033C268359!125").content()
-//		.buildRequest()
-//		.put(fileContent);
     }
     
     private static void uploadFile() throws ExecutionException, InterruptedException {
@@ -85,6 +63,16 @@ public class App
 		System.out.println("inside upload func: "+onedrive);
 		FileUploadResult result = getResultWhenDone(onedrive.uploadFile(graphClient, filePath, onedrivepath), NULL);
 		printResult(result);
+    }
+	
+    private static void downloadFile() throws ExecutionException, InterruptedException {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Enter id of file to be downloaded: ");
+		String fileId = sc.nextLine();
+		System.out.println("Starting download");
+		Result downloadresult = getResultWhenDone(onedrive.downloadFile(graphClient, fileId));
+		printResult(downloadresult);
     }
     
     private static void renameFile() throws ExecutionException, InterruptedException {
