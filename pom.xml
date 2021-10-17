@@ -26,6 +26,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+      <version>5.0.0.Alpha2</version>
+      </dependency>
+      <dependency>
   	<!-- Include the sdk as a dependency -->
  		<groupId>com.microsoft.graph</groupId>
   		<artifactId>microsoft-graph</artifactId>
@@ -37,6 +42,28 @@
   		<artifactId>azure-identity</artifactId>
   		<version>1.2.5</version>
 	</dependency>
+	<dependency>
+            <groupId>io.projectreactor.netty</groupId>
+            <artifactId>reactor-netty</artifactId>
+            <version>0.9.20.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>3.4.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.65.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-bom</artifactId>
+            <version>4.1.37.Final</version>
+            <scope>import</scope>
+            <type>pom</type>
+        </dependency>
   </dependencies>
 
   <build>
