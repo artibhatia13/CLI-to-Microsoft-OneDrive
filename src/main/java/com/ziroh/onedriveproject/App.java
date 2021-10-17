@@ -2,6 +2,13 @@ package com.ziroh.onedriveproject;
 
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.models.Drive;
+import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.models.DriveItemCopyParameterSet;
+import com.microsoft.graph.models.DriveItemCreateUploadSessionParameterSet;
+import com.microsoft.graph.models.DriveItemUploadableProperties;
+import com.microsoft.graph.models.FileSystemInfo;
+import com.microsoft.graph.models.ItemReference;
+import com.microsoft.graph.models.UploadSession;
 import com.microsoft.graph.models.User;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
@@ -43,23 +50,79 @@ public class App
    	
 //    	renameFile();
 //    	uploadFile();
-//    	createDirectory();
-//   	copyFile();
-	copyDirectory();    	
-    }
+//    	shareFile();
+//    	aboutInformation();
+//    	downloadFile();
+//    	copyFile();
+//      deleteFile();   
+//    	deleteDirectory();
+    	DriveItemCollectionPage children = graphClient.me().drive().root().children()
+    			.buildRequest()
+    			.get();
+     for(int i=0; i<children.getCount()-1;i++)
+     {
+    	 System.out.println(children.getCurrentPage().get(i).name+"  "+children.getCurrentPage().get(i).id);
+     }
+    	copyDirectory();
+    } 	
     
     private static void uploadFile() throws ExecutionException, InterruptedException {
 		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Enter the path of the file to be uploaded: ");
 		String filePath = sc.nextLine();
+		char ch;
+		String extention ="";
+		for(int i=filePath.length()-1;i>=0;i--)
+		{
+			ch = filePath.charAt(i);
+			if(ch=='.')
+				{extention = filePath.substring(i);
+			    break;}
+		}
+		
 		System.out.print("Enter the path of the parent folder in onedrive: ");
 		String onedrivepath = sc.nextLine();
+		System.out.println("Enter the filename: ");
+		String fileName = sc.nextLine();
+		onedrivepath = onedrivepath + "/" + fileName + extention;
 		System.out.println("inside upload func: "+onedrive);
 		FileUploadResult result = getResultWhenDone(onedrive.uploadFile(graphClient, filePath, onedrivepath), NULL);
 		printResult(result);
     }
-   
+	
+        private static void downloadFile() throws ExecutionException, InterruptedException 
+     {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Enter id of file to be downloaded: ");
+		String fileId = sc.nextLine();
+		System.out.print("Enter the path to download the file: ");
+		String path = sc.nextLine();
+		System.out.println("Starting download");
+		Result result = getResultWhenDone(onedrive.downloadFile(graphClient, fileId,path));
+		printResult(result);
+    }
+	
+        private static void deleteFile() throws ExecutionException, InterruptedException {
+        	@SuppressWarnings("resource")
+    		Scanner sc = new Scanner(System.in);
+    		System.out.print("Enter the id of file to be deleted: ");
+    		String fileId = sc.nextLine();
+    		Result result = getResultWhenDone(onedrive.deleteFile(graphClient, fileId));
+    		printResult(result);
+        }
+        
+        private static void shareFile() throws ExecutionException, InterruptedException {
+        	@SuppressWarnings("resource")
+    		Scanner sc = new Scanner(System.in);
+    		System.out.print("Enter id of file to be shared: ");
+    		String fileId = sc.nextLine();
+    		Result result = getResultWhenDone(onedrive.shareFile(graphClient,fileId));
+    		printResult(result);
+        }
+        
+    
     private static void renameFile() throws ExecutionException, InterruptedException {
       Scanner sc = new Scanner(System.in);      
       System.out.println("Id of the file to rename: ");
@@ -69,6 +132,31 @@ public class App
       Result renameResult = getResultWhenDone(onedrive.renameFile(graphClient, fileId, newName));
       printResult(renameResult);
     }
+    
+    private static void updateFile() throws ExecutionException, InterruptedException {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Enter id of file to be updated: ");
+		String fileId = sc.nextLine();
+		System.out.print("Path of the file to update the id entered: ");
+		String filePath = sc.nextLine();
+		Result result = getResultWhenDone(onedrive.updateFile(graphClient, fileId, filePath));
+		printResult(result);
+}
+    
+    private static void copyFile() throws ExecutionException, InterruptedException {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+    	System.out.print("Enter the id of the file to be moved: ");
+    	String fileId = sc.nextLine();
+    	System.out.print("Enter the id of the directory to which the file is to be moved: ");
+    	String directoryId = sc.nextLine();
+    	System.out.print("Enter the new name of the file with extention: ");
+    	String fileName = sc.nextLine();
+		Result result = getResultWhenDone(onedrive.copyFile(graphClient, fileId, directoryId,fileName));
+    	printResult(result);
+    }
+
     
     private static void createDirectory() throws ExecutionException, InterruptedException {
     	@SuppressWarnings("resource")
@@ -81,16 +169,15 @@ public class App
     	printResult(result);
     }
     
-    private static void copyFile() throws ExecutionException, InterruptedException {
+    private static void deleteDirectory() throws ExecutionException, InterruptedException {
     	@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
-    	System.out.print("Enter the id of the file to be moved: ");
-    	String fileId = sc.nextLine();
-    	System.out.print("Enter the id of the directory to which the file is to be moved: ");
+    	System.out.print("Enter the id of the directory to be deleted: ");
     	String directoryId = sc.nextLine();
-		Result result = getResultWhenDone(onedrive.copyFile(graphClient, fileId, directoryId));
+		Result result = getResultWhenDone(onedrive.deleteDirectory(graphClient, directoryId));
     	printResult(result);
     }
+    
     private static void copyDirectory() throws ExecutionException, InterruptedException {
     	@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
@@ -98,9 +185,16 @@ public class App
     	String sourceId = sc.nextLine();
     	System.out.print("Enter the id of the directory to which this directory is to be copied: ");
     	String destinationId = sc.nextLine();
-		Result result = getResultWhenDone(onedrive.copyDirectory(graphClient, sourceId, destinationId));
+    	System.out.println("Enter the name of the new directory");
+    	String DirectoryName = sc.nextLine();
+		Result result = getResultWhenDone(onedrive.copyDirectory(graphClient, sourceId, destinationId,DirectoryName));
     	printResult(result);
     }
+    
+    private static void aboutInformation() throws ExecutionException, InterruptedException {
+    	Result result = getResultWhenDone(onedrive.aboutInformation(graphClient));
+        printResult(result);
+      }
     
     private static FileUploadResult getResultWhenDone(FutureTask<FileUploadResult> uploadResultFutureTask, String NULL) throws InterruptedException, ExecutionException {
         new Thread(uploadResultFutureTask).start();
@@ -117,6 +211,8 @@ public class App
         System.out.print("\nProcessing the upload and waiting for the result...");
         return uploadResultFutureTask.get();
       }
+    
+    
     
     private static Result getResultWhenDone(FutureTask<Result> resultFutureTask) throws InterruptedException, ExecutionException {
         new Thread(resultFutureTask).start();
