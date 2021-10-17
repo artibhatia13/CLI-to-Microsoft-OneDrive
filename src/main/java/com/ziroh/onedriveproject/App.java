@@ -43,14 +43,9 @@ public class App
    	
 //    	renameFile();
 //    	uploadFile();
-<<<<<<< HEAD
 //    	createDirectory();
 //   	copyFile();
-		copyDirectory();    	
-=======
-    	downloadFile();
->>>>>>> f4e345b8d6889663f826f9bddd948dd8a23e4342
-    	
+	copyDirectory();    	
     }
     
     private static void uploadFile() throws ExecutionException, InterruptedException {
@@ -64,17 +59,7 @@ public class App
 		FileUploadResult result = getResultWhenDone(onedrive.uploadFile(graphClient, filePath, onedrivepath), NULL);
 		printResult(result);
     }
-	
-    private static void downloadFile() throws ExecutionException, InterruptedException {
-    	@SuppressWarnings("resource")
-		Scanner sc = new Scanner(System.in);
-		System.out.print("Enter id of file to be downloaded: ");
-		String fileId = sc.nextLine();
-		System.out.println("Starting download");
-		Result downloadresult = getResultWhenDone(onedrive.downloadFile(graphClient, fileId));
-		printResult(downloadresult);
-    }
-    
+   
     private static void renameFile() throws ExecutionException, InterruptedException {
       Scanner sc = new Scanner(System.in);      
       System.out.println("Id of the file to rename: ");
