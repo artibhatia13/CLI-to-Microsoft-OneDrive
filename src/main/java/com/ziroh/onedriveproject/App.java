@@ -15,6 +15,10 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import com.azure.identity.InteractiveBrowserCredential;
 import com.azure.identity.InteractiveBrowserCredentialBuilder;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -26,9 +30,9 @@ public class App
 	static GraphServiceClient graphClient = null;	
 	private static final String NULL = "";
 	private static ICloudIO onedrive;	
-	
+	private static Path path = null;
 	//Methods	  
-    public static void main( String[] args ) throws ExecutionException, InterruptedException
+    public static void main( String[] args ) throws ExecutionException, InterruptedException, IOException
     {    	    	
     	//Authentication
     	final InteractiveBrowserCredential interactiveBrowserCredential = new InteractiveBrowserCredentialBuilder()
@@ -48,7 +52,7 @@ public class App
     	
     	onedrive = new Onedrive();
    	
-//    	renameFile();
+//     	renameFile();
 //    	uploadFile();
 //    	shareFile();
 //    	aboutInformation();
@@ -56,6 +60,7 @@ public class App
 //    	copyFile();
 //      deleteFile();   
 //    	deleteDirectory();
+//    	updateFile();
     	DriveItemCollectionPage children = graphClient.me().drive().root().children()
     			.buildRequest()
     			.get();
@@ -63,9 +68,9 @@ public class App
      {
     	 System.out.println(children.getCurrentPage().get(i).name+"  "+children.getCurrentPage().get(i).id);
      }
-    	copyDirectory();
+    	//copyDirectory();
+     
     } 	
-    
     private static void uploadFile() throws ExecutionException, InterruptedException {
 		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
