@@ -56,7 +56,10 @@ public class App
     	onedrive = new Onedrive();
     	
 //    	renameFile();
-    	uploadFile();
+//    	uploadFile();
+//    	createDirectory();
+//   	copyFile();
+		copyDirectory();    	
     	
     	//update
 //    	File file = new File("C:\\Users\\ADMIN\\Videos\\Captures\\testing.png");    	
@@ -94,18 +97,37 @@ public class App
       printResult(renameResult);
     }
     
-//    private static void createDirectory() throws ExecutionException, InterruptedException {
-//		Scanner sc = new Scanner(System.in);
-//		
-//    	System.out.print("Enter the name of the directory to be created: ");
-//    	directoryName = sc.nextLine();
-//    	
-//    	System.out.print("Enter the id of the parent folder(Enter \'0\' for the root folder): ");
-//    	parentId = sc.nextLine();
-//    	
-//    	CreateDirectoryResult result = getResultWhenDone(onedrive.createDirectory(graphClient, directoryName, parentId), 0);
-//    	printResult(result);
-//    }
+    private static void createDirectory() throws ExecutionException, InterruptedException {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+    	System.out.print("Enter the name of the directory to be created: ");
+    	String directoryName = sc.nextLine();
+    	System.out.print("Enter the id of the parent folder(Enter 'root' for the root folder): ");
+    	String parentId = sc.nextLine();
+     	CreateDirectoryResult result = getResultWhenDone(onedrive.createDirectory(graphClient, directoryName, parentId), 0);
+    	printResult(result);
+    }
+    
+    private static void copyFile() throws ExecutionException, InterruptedException {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+    	System.out.print("Enter the id of the file to be moved: ");
+    	String fileId = sc.nextLine();
+    	System.out.print("Enter the id of the directory to which the file is to be moved: ");
+    	String directoryId = sc.nextLine();
+		Result result = getResultWhenDone(onedrive.copyFile(graphClient, fileId, directoryId));
+    	printResult(result);
+    }
+    private static void copyDirectory() throws ExecutionException, InterruptedException {
+    	@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+    	System.out.print("Enter the id of the directory to be copied: ");
+    	String sourceId = sc.nextLine();
+    	System.out.print("Enter the id of the directory to which this directory is to be copied: ");
+    	String destinationId = sc.nextLine();
+		Result result = getResultWhenDone(onedrive.copyDirectory(graphClient, sourceId, destinationId));
+    	printResult(result);
+    }
     
     private static FileUploadResult getResultWhenDone(FutureTask<FileUploadResult> uploadResultFutureTask, String NULL) throws InterruptedException, ExecutionException {
         new Thread(uploadResultFutureTask).start();
@@ -138,6 +160,21 @@ public class App
         System.out.print("\nWaiting for the Result...");
         return resultFutureTask.get();
      }
+    private static CreateDirectoryResult getResultWhenDone(FutureTask<CreateDirectoryResult> createDirectoryFutureTask, int a) throws InterruptedException, ExecutionException {
+        new Thread(createDirectoryFutureTask).start();
+        new Thread(() -> {
+          while(!createDirectoryFutureTask.isDone()){
+            try {
+              Thread.sleep(1000);
+              if(!createDirectoryFutureTask.isDone())
+              System.err.print("# ");
+            }catch (InterruptedException ignore){}
+          }
+        }).start();
+        Thread.sleep(500);
+        System.out.print("\nProcessing and waiting for the result...");
+        return createDirectoryFutureTask.get();
+      }
     
     private static void printResult(Result result){        
     	if(result.getClass() == FileUploadResult.class)
