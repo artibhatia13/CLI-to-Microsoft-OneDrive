@@ -11,21 +11,11 @@ import com.microsoft.graph.models.ItemReference;
 import com.microsoft.graph.models.UploadSession;
 import com.microsoft.graph.models.User;
 import com.microsoft.graph.requests.DriveItemCollectionPage;
-import com.microsoft.graph.requests.DriveItemContentStreamRequest;
 import com.microsoft.graph.requests.GraphServiceClient;
-import com.microsoft.graph.tasks.*;
-
-import okhttp3.Request;
-
 import com.azure.identity.InteractiveBrowserCredential;
 import com.azure.identity.InteractiveBrowserCredentialBuilder;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
 import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
@@ -57,7 +47,7 @@ public class App
     	final User me = graphClient.me().buildRequest().get();
     	
     	onedrive = new Onedrive();
-    	
+   	
 //    	renameFile();
 //    	uploadFile();
 //    	shareFile();
@@ -114,7 +104,24 @@ public class App
 		printResult(result);
     }
 	
-	
+        private static void deleteFile() throws ExecutionException, InterruptedException {
+        	@SuppressWarnings("resource")
+    		Scanner sc = new Scanner(System.in);
+    		System.out.print("Enter the id of file to be deleted: ");
+    		String fileId = sc.nextLine();
+    		Result result = getResultWhenDone(onedrive.deleteFile(graphClient, fileId));
+    		printResult(result);
+        }
+        
+        private static void shareFile() throws ExecutionException, InterruptedException {
+        	@SuppressWarnings("resource")
+    		Scanner sc = new Scanner(System.in);
+    		System.out.print("Enter id of file to be shared: ");
+    		String fileId = sc.nextLine();
+    		Result result = getResultWhenDone(onedrive.shareFile(graphClient,fileId));
+    		printResult(result);
+        }
+        
     
     private static void renameFile() throws ExecutionException, InterruptedException {
       Scanner sc = new Scanner(System.in);      
@@ -125,49 +132,6 @@ public class App
       Result renameResult = getResultWhenDone(onedrive.renameFile(graphClient, fileId, newName));
       printResult(renameResult);
     }
-    
-//    private static void createDirectory() throws ExecutionException, InterruptedException {
-//		Scanner sc = new Scanner(System.in);
-//		
-//    	System.out.print("Enter the name of the directory to be created: ");
-//    	directoryName = sc.nextLine();
-//    	
-//    	System.out.print("Enter the id of the parent folder(Enter \'0\' for the root folder): ");
-//    	parentId = sc.nextLine();
-//    	
-//    	CreateDirectoryResult result = getResultWhenDone(onedrive.createDirectory(graphClient, directoryName, parentId), 0);
-//    	printResult(result);
-//    }
-    
-    private static FileUploadResult getResultWhenDone(FutureTask<FileUploadResult> uploadResultFutureTask, String NULL) throws InterruptedException, ExecutionException {
-        new Thread(uploadResultFutureTask).start();
-        new Thread(() -> {
-          while(!uploadResultFutureTask.isDone()){
-            try {
-              Thread.sleep(1000);
-              if(!uploadResultFutureTask.isDone())
-              System.err.print("# ");
-            }catch (InterruptedException ignore){}
-          }
-        }).start();
-        Thread.sleep(500);
-        System.out.print("\nProcessing the upload and waiting for the result...");
-        return uploadResultFutureTask.get();
-      }
-    
-    private static void shareFile() throws ExecutionException, InterruptedException {
-    	@SuppressWarnings("resource")
-		Scanner sc = new Scanner(System.in);
-		System.out.print("Enter id of file to be shared: ");
-		String fileId = sc.nextLine();
-		Result result = getResultWhenDone(onedrive.shareFile(graphClient,fileId));
-		printResult(result);
-    }
-    
-    private static void aboutInformation() throws ExecutionException, InterruptedException {
-    	Result result = getResultWhenDone(onedrive.aboutInformation(graphClient));
-        printResult(result);
-      }
     
     private static void updateFile() throws ExecutionException, InterruptedException {
     	@SuppressWarnings("resource")
@@ -193,13 +157,16 @@ public class App
     	printResult(result);
     }
 
-    private static void deleteFile() throws ExecutionException, InterruptedException {
+    
+    private static void createDirectory() throws ExecutionException, InterruptedException {
     	@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
-		System.out.print("Enter the id of file to be deleted: ");
-		String fileId = sc.nextLine();
-		Result result = getResultWhenDone(onedrive.deleteFile(graphClient, fileId));
-		printResult(result);
+    	System.out.print("Enter the name of the directory to be created: ");
+    	String directoryName = sc.nextLine();
+    	System.out.print("Enter the id of the parent folder(Enter 'root' for the root folder): ");
+    	String parentId = sc.nextLine();
+     	CreateDirectoryResult result = getResultWhenDone(onedrive.createDirectory(graphClient, directoryName, parentId), 0);
+    	printResult(result);
     }
     
     private static void deleteDirectory() throws ExecutionException, InterruptedException {
@@ -224,6 +191,29 @@ public class App
     	printResult(result);
     }
     
+    private static void aboutInformation() throws ExecutionException, InterruptedException {
+    	Result result = getResultWhenDone(onedrive.aboutInformation(graphClient));
+        printResult(result);
+      }
+    
+    private static FileUploadResult getResultWhenDone(FutureTask<FileUploadResult> uploadResultFutureTask, String NULL) throws InterruptedException, ExecutionException {
+        new Thread(uploadResultFutureTask).start();
+        new Thread(() -> {
+          while(!uploadResultFutureTask.isDone()){
+            try {
+              Thread.sleep(1000);
+              if(!uploadResultFutureTask.isDone())
+              System.err.print("# ");
+            }catch (InterruptedException ignore){}
+          }
+        }).start();
+        Thread.sleep(500);
+        System.out.print("\nProcessing the upload and waiting for the result...");
+        return uploadResultFutureTask.get();
+      }
+    
+    
+    
     private static Result getResultWhenDone(FutureTask<Result> resultFutureTask) throws InterruptedException, ExecutionException {
         new Thread(resultFutureTask).start();
         new Thread(() -> {
@@ -239,6 +229,21 @@ public class App
         System.out.print("\nWaiting for the Result...");
         return resultFutureTask.get();
      }
+    private static CreateDirectoryResult getResultWhenDone(FutureTask<CreateDirectoryResult> createDirectoryFutureTask, int a) throws InterruptedException, ExecutionException {
+        new Thread(createDirectoryFutureTask).start();
+        new Thread(() -> {
+          while(!createDirectoryFutureTask.isDone()){
+            try {
+              Thread.sleep(1000);
+              if(!createDirectoryFutureTask.isDone())
+              System.err.print("# ");
+            }catch (InterruptedException ignore){}
+          }
+        }).start();
+        Thread.sleep(500);
+        System.out.print("\nProcessing and waiting for the result...");
+        return createDirectoryFutureTask.get();
+      }
     
     private static void printResult(Result result){        
     	if(result.getClass() == FileUploadResult.class)

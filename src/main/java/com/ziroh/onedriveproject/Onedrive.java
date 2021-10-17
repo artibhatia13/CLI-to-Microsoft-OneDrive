@@ -3,6 +3,7 @@ package com.ziroh.onedriveproject;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.concurrent.*;
 
 import com.microsoft.graph.models.Drive;
@@ -13,12 +14,16 @@ import com.microsoft.graph.models.DriveItemCreateUploadSessionParameterSet;
 import com.microsoft.graph.models.DriveItemUploadableProperties;
 import com.microsoft.graph.models.ItemReference;
 import com.microsoft.graph.models.Permission;
+import com.microsoft.graph.models.Folder;
+import com.microsoft.graph.models.ItemReference;
 import com.microsoft.graph.models.UploadSession;
+import com.microsoft.graph.requests.DriveItemCollectionPage;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.tasks.LargeFileUploadResult;
 import com.microsoft.graph.tasks.LargeFileUploadTask;
+import com.google.gson.JsonPrimitive;
 import com.microsoft.graph.http.GraphServiceException;
-
+import com.microsoft.graph.models.DriveItemCopyParameterSet;
 public class Onedrive implements ICloudIO {
     
 	public FutureTask<FileUploadResult> uploadFile(GraphServiceClient graphClient, String filePath, String onedrivepath) {
@@ -214,6 +219,40 @@ public class Onedrive implements ICloudIO {
             	StringWriter errors = new StringWriter();
             	onedriveError.printStackTrace(new PrintWriter(errors));
                 result.setLongMsg(errors.toString());
+            } 
+            catch(Exception e) {
+    			result.setErrorMsg(e.getMessage());
+                result.setErrorCode(1);
+                result.setShortMsg(Arrays.toString(e.getStackTrace()));
+                StringWriter errors = new StringWriter();
+                e.printStackTrace(new PrintWriter(errors));
+                result.setLongMsg(errors.toString());
+    		}
+        }, result);
+        return updateFileFutureTask;
+    }
+	public FutureTask<CreateDirectoryResult> createDirectory(GraphServiceClient graphClient, String directoryName, String parentId) {
+		CreateDirectoryResult result = new CreateDirectoryResult();
+		
+		FutureTask<CreateDirectoryResult> createDirectoryFutureTask = new FutureTask<>(() -> {
+			try {
+				DriveItem driveItem = new DriveItem();
+		    	driveItem.name = directoryName;
+		    	Folder folder = new Folder();
+		    	driveItem.folder = folder;
+		    	driveItem.additionalDataManager().put("@microsoft.graph.conflictBehavior", new JsonPrimitive("rename"));
+		    	graphClient.me().drive().items(parentId).children()
+		    		.buildRequest()
+		    		.post(driveItem);
+		    	result.setId(driveItem.id);
+				result.setErrorCode(0);
+			} catch(GraphServiceException onedriveError) {
+            	result.setErrorMsg(onedriveError.getMessage());
+            	result.setErrorCode(1);
+            	result.setShortMsg(String.valueOf(onedriveError.getResponseCode()));
+            	StringWriter errors = new StringWriter();
+            	onedriveError.printStackTrace(new PrintWriter(errors));
+                result.setLongMsg(errors.toString());
             }
     		catch(Exception e) {
     			result.setErrorMsg(e.getMessage());
@@ -225,7 +264,7 @@ public class Onedrive implements ICloudIO {
     		}
     	}, result);
     	
-    	return updateFileFutureTask;
+    	return createDirectoryFutureTask;
     }
 	
 	
@@ -372,7 +411,7 @@ public class Onedrive implements ICloudIO {
 	public FutureTask<Result> copyDirectory(GraphServiceClient graphClient, String sourceId, String destinationId,String fileName) {
 		Result result = new Result();
 		
-		FutureTask<Result> copyFileFutureTask = new FutureTask<>(() -> {
+		FutureTask<Result> copyDirectoryFutureTask = new FutureTask<>(() -> {
 			try {
 				Drive drive = graphClient.me().drive()
 		    			.buildRequest()
@@ -399,51 +438,15 @@ public class Onedrive implements ICloudIO {
                 result.setLongMsg(errors.toString());
             }
 			catch(Exception e) {
-				result.setErrorMsg(e.getMessage());
+           	 result.setErrorMsg(e.getMessage());
                 result.setErrorCode(1);
                 result.setShortMsg(Arrays.toString(e.getStackTrace()));
                 StringWriter errors = new StringWriter();
                 e.printStackTrace(new PrintWriter(errors));
                 result.setLongMsg(errors.toString());
-			}
-		}, result);
-		
-		return copyFileFutureTask;
-	}
-    
-//	public FutureTask<CreateDirectoryResult> createDirectory(GraphServiceClient graphClient, String directoryName, String parentId) {
-//		CreateDirectoryResult result = new CreateDirectoryResult();
-//		
-//		FutureTask<CreateDirectoryResult> createDirectoryFutureTask = new FutureTask<>(() -> {
-//			try {
-//				BoxFolder parentFolder;
-//				if(parentId.equals("0"))
-//					parentFolder = BoxFolder.getRootFolder(api);
-//				else
-//					parentFolder = new BoxFolder(api, parentId);
-//				
-//				BoxFolder.Info childFolderInfo = parentFolder.createFolder(directoryName);
-//				System.out.println("\nID of the newly created directory: " + childFolderInfo.getID());
-//				result.setId(childFolderInfo.getID());
-//				result.setErrorCode(0);
-//			} catch(BoxAPIException boxError) {
-//            	result.setErrorMsg(boxError.getMessage());
-//            	result.setErrorCode(1);
-//            	result.setShortMsg(String.valueOf(boxError.getResponseCode()));
-//            	StringWriter errors = new StringWriter();
-//                boxError.printStackTrace(new PrintWriter(errors));
-//                result.setLongMsg(errors.toString());
-//            }
-//			catch(Exception e) {
-//				result.setErrorMsg(e.getMessage());
-//                result.setErrorCode(1);
-//                result.setShortMsg(Arrays.toString(e.getStackTrace()));
-//                StringWriter errors = new StringWriter();
-//                e.printStackTrace(new PrintWriter(errors));
-//                result.setLongMsg(errors.toString());
-//			}
-//		}, result);
-//	
-//		return createDirectoryFutureTask;
-//	}
+           }
+   	}, result);
+   	return copyDirectoryFutureTask;
+   }
+	
 }

@@ -15,4 +15,6 @@ public interface ICloudIO {
 	FutureTask<Result> deleteFile(GraphServiceClient graphClient, String fileId);
 	FutureTask<Result> deleteDirectory(GraphServiceClient graphClient, String directoryId);
 	FutureTask<Result> copyDirectory(GraphServiceClient graphClient, String sourceId, String destinationId, String fileName);
+	FutureTask<CreateDirectoryResult> createDirectory(GraphServiceClient graphClient, String directoryName,
+			String parentId);
 }
