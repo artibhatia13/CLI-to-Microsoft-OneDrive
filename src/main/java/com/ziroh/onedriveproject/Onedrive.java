@@ -113,24 +113,26 @@ public class Onedrive implements ICloudIO {
 	
 	public FutureTask<Result> downloadFile(GraphServiceClient graphClient, String fileId) {
     		Result result = new Result();
-    	
+    	//DF40F1033C268359!149
     		FutureTask<Result> downloadFileFutureTask = new FutureTask<>(() -> {
-    			try {
-				InputStream stream = (InputStream) graphClient.customRequest("/me/drive/items/DF40F1033C268359!125/content", InputStream.class)
+    		try {
+				InputStream stream = (InputStream) graphClient.customRequest("/me/drive/items/"+fileId+"/content", InputStream.class)
      							.buildRequest()
      							.get();
 				try {
-					FileOutputStream fileOS = new FileOutputStream("C:/Users/User/Documents/image_test.png"); {
+					FileOutputStream fileOS = new FileOutputStream("C:\\Users\\ADMIN\\Downloads\\onedriveContent.png"); {
 						byte data[] = new byte[1024];
         	    				int byteContent;
         	    				while ((byteContent = stream.read(data, 0, 1024)) != -1) {
 							fileOS.write(data, 0, byteContent);
         	    				}
         				} 
-         			}
+					result.setErrorCode(0);
+	        		stream.close();
+         		}
 				catch(IOException e) {
 					System.out.println(e);
-        			}
+        		}
 			} 
 			catch(GraphServiceException onedriveError) {
             	result.setErrorMsg(onedriveError.getMessage());
