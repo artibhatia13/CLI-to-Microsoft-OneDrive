@@ -1,10 +1,13 @@
 package com.ziroh.onedriveproject;
 
 import java.io.*;
+import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.List;
+import java.util.ArrayList;
 
 import com.microsoft.graph.models.Drive;
 import com.microsoft.graph.models.DriveItem;
@@ -459,5 +462,89 @@ public class Onedrive implements ICloudIO {
    	}, result);
    	return copyDirectoryFutureTask;
    }
+	
+	public FutureTask<DirectoryRetrievalResult> GetCloudDirectory(GraphServiceClient graphClient, String directoryId, String offset, String limit) {
+        DirectoryRetrievalResult dirRetrievalResult = new DirectoryRetrievalResult();
+        
+        FutureTask<DirectoryRetrievalResult> getCloudFutureTask = new FutureTask<>(() -> {
+            try {
+            	Drive drive = graphClient.me().drive()
+            			.buildRequest()
+            			.get();
+             	System.out.println(drive.id);
+             	DriveItemCollectionPage children = graphClient.drives(drive.id).items(directoryId).children()
+            			.buildRequest()
+            			.get();
+             	
+             	int offsetnumber = Integer.parseInt(offset); 
+             	int limitnumber = Integer.parseInt(limit);  
+            
+                Directory directoryRetrieved = new Directory();
+                
+                if (children.getCount() == null) {
+                    dirRetrievalResult.setShortMsg("No files found");
+                } else {
+                    
+                    List<Directory> directoriesList = new ArrayList<>();                
+                    List<com.ziroh.onedriveproject.File> filesList = new ArrayList<>();
+                    
+                    for(int i=offsetnumber; i<children.getCount()&& i<offsetnumber+limitnumber;i++)
+                 	{
+                	    try {
+                	    	if (!children.getCurrentPage().get(i).folder.equals(null)){
+                	    		System.out.println(" entering else in for loop in else in try block ");
+                	    		Directory directory = new Directory();
+                	    		directory.setId(children.getCurrentPage().get(i).id);
+                	    		directory.setName(children.getCurrentPage().get(i).name);
+                	    		directory.setParentId(children.getCurrentPage().get(i).parentReference.id);
+                	    		directory.setCreatedOn(children.getCurrentPage().get(i).createdDateTime);
+                	    		directory.setLastModified(children.getCurrentPage().get(i).lastModifiedDateTime);
+                	    		directory.setOriginatingAbsolutePath(children.getCurrentPage().get(i).parentReference.path);
+                            
+                	    		directoriesList.add(directory);
+                	    		System.out.println(directoriesList);
+                	    	} 
+                	    }catch(Exception ignore) {    
+                	    	   com.ziroh.onedriveproject.File myFile = new com.ziroh.onedriveproject.File();
+                              
+                               myFile.setId(children.getCurrentPage().get(i).id);
+                               myFile.setName(children.getCurrentPage().get(i).name);
+                               myFile.setMimeType(children.getCurrentPage().get(i).file.mimeType);
+                               myFile.setParentId(children.getCurrentPage().get(i).parentReference.id);
+                               myFile.setCreatedOn(children.getCurrentPage().get(i).createdDateTime);
+                               myFile.setLastModified(children.getCurrentPage().get(i).lastModifiedDateTime);
+                               myFile.setOriginatingAbsolutePath(children.getCurrentPage().get(i).parentReference.path);
+                               myFile.setOriginDeviceName(children.getCurrentPage().get(i).parentReference.path);
+                   
+                               filesList.add(myFile);                                                            
+                               System.out.println(filesList);   
+                	    }
+                        directoryRetrieved.setSubDirectoryCollection(directoriesList.toArray(new Directory[0]));
+                        directoryRetrieved.setFileCollection(filesList.toArray(new com.ziroh.onedriveproject.File[0]));
+                        dirRetrievalResult.setDirectoryRetrieved(directoryRetrieved);
+                    }                    
+                    dirRetrievalResult.setShortMsg("Cloud directory extracted successfully");
+                    dirRetrievalResult.setErrorCode(0);   
+                }
+            }catch(GraphServiceException onedriveError) {
+            	dirRetrievalResult.setErrorMsg(onedriveError.getMessage());
+            	dirRetrievalResult.setErrorCode(1);
+            	dirRetrievalResult.setShortMsg(String.valueOf(onedriveError.getResponseCode()));
+            	StringWriter errors = new StringWriter();
+            	onedriveError.printStackTrace(new PrintWriter(errors));
+            	dirRetrievalResult.setLongMsg(errors.toString());
+            } 
+            catch (Exception e) {
+                dirRetrievalResult.setErrorCode(1);
+                dirRetrievalResult.setErrorMsg(e.getMessage());                
+                dirRetrievalResult.setShortMsg(Arrays.toString(e.getStackTrace()));
+                StringWriter errors = new StringWriter();
+                e.printStackTrace(new PrintWriter(errors));
+                dirRetrievalResult.setLongMsg(errors.toString());
+            }
+        }, dirRetrievalResult);
+        return getCloudFutureTask;
+    }
+
 	
 }

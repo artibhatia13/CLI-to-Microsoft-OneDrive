@@ -17,4 +17,6 @@ public interface ICloudIO {
 	FutureTask<Result> copyDirectory(GraphServiceClient graphClient, String sourceId, String destinationId, String fileName);
 	FutureTask<CreateDirectoryResult> createDirectory(GraphServiceClient graphClient, String directoryName,
 			String parentId);
+	FutureTask<DirectoryRetrievalResult> GetCloudDirectory(GraphServiceClient graphClient, String directoryId,
+			String offset, String limit);
 }

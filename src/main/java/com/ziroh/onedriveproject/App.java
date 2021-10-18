@@ -28,7 +28,7 @@ public class App
 	//Variables
 	@SuppressWarnings("rawtypes")
 	static GraphServiceClient graphClient = null;	
-	private static final String NULL = "";
+	private static final String NULL = "", EMPTY = "";
 	private static ICloudIO onedrive;	
 	private static Path path = null;
 	//Methods	  
@@ -61,14 +61,15 @@ public class App
 //      deleteFile();   
 //    	deleteDirectory();
 //    	updateFile();
-    	DriveItemCollectionPage children = graphClient.me().drive().root().children()
-    			.buildRequest()
-    			.get();
-     for(int i=0; i<children.getCount()-1;i++)
-     {
-    	 System.out.println(children.getCurrentPage().get(i).name+"  "+children.getCurrentPage().get(i).id);
-     }
+//    	DriveItemCollectionPage children = graphClient.me().drive().root().children()
+//    			.buildRequest()
+//    			.get();
+//     for(int i=0; i<children.getCount()-1;i++)
+//     {
+//    	 System.out.println(children.getCurrentPage().get(i).name+"  "+children.getCurrentPage().get(i).id);
+//     }
     	//copyDirectory();
+    	GetCloudDirectory();
      
     } 	
     private static void uploadFile() throws ExecutionException, InterruptedException {
@@ -201,6 +202,35 @@ public class App
         printResult(result);
       }
     
+    public static void GetCloudDirectory() throws ExecutionException, InterruptedException {
+		@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+		System.out.print("Enter the id of the directory whose contents are to be printed: ");
+		String directoryId = sc.nextLine();
+		System.out.print("Enter the offset value: ");
+		String offset = sc.nextLine();
+		System.out.print("Enter the limit: ");
+		String limit = sc.nextLine();
+		Result directorylist = getResultWhenDone(onedrive.GetCloudDirectory(graphClient, directoryId, offset, limit), NULL, EMPTY);
+		printResult(directorylist);
+}
+    
+    private static DirectoryRetrievalResult getResultWhenDone(FutureTask<DirectoryRetrievalResult> getCloudFutureTask, String NULL, String EMPTY) throws InterruptedException, ExecutionException {
+        new Thread(getCloudFutureTask).start();
+        new Thread(() -> {
+          while(!getCloudFutureTask.isDone()){
+            try {
+              Thread.sleep(1000);
+              if(!getCloudFutureTask.isDone())
+              System.err.print("# ");
+            }catch (InterruptedException ignore){}
+          }
+        }).start();
+        Thread.sleep(800);
+        System.out.print("\nWaiting for the Result...");
+        return getCloudFutureTask.get();
+     }
+    
     private static FileUploadResult getResultWhenDone(final FutureTask<FileUploadResult> uploadResultFutureTask, String NULL) throws InterruptedException, ExecutionException {
         new Thread(uploadResultFutureTask).start();
         new Thread(() -> {
@@ -216,9 +246,7 @@ public class App
         System.out.print("\nProcessing the upload and waiting for the result...");
         return uploadResultFutureTask.get();
       }
-    
-    
-    
+
     private static Result getResultWhenDone(FutureTask<Result> resultFutureTask) throws InterruptedException, ExecutionException {
         new Thread(resultFutureTask).start();
         new Thread(() -> {
@@ -234,6 +262,7 @@ public class App
         System.out.print("\nWaiting for the Result...");
         return resultFutureTask.get();
      }
+    
     private static CreateDirectoryResult getResultWhenDone(FutureTask<CreateDirectoryResult> createDirectoryFutureTask, int a) throws InterruptedException, ExecutionException {
         new Thread(createDirectoryFutureTask).start();
         new Thread(() -> {
