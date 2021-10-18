@@ -93,7 +93,6 @@ public class Onedrive implements ICloudIO {
 		
 		FutureTask<Result> renameFileFutureTask = new FutureTask<>(() -> {
 			try {
-				System.out.println("Inside Try. GraphClient: "+graphClient);
 				DriveItem driveItem = new DriveItem();
 		    	driveItem.name = newName;
 		    	
@@ -247,10 +246,10 @@ public class Onedrive implements ICloudIO {
 		    	Folder folder = new Folder();
 		    	driveItem.folder = folder;
 		    	driveItem.additionalDataManager().put("@microsoft.graph.conflictBehavior", new JsonPrimitive("rename"));
-		    	graphClient.me().drive().items(parentId).children()
+		    	DriveItem newdrive = graphClient.me().drive().items(parentId).children()
 		    		.buildRequest()
 		    		.post(driveItem);
-		    	result.setId(driveItem.id);
+		    	result.setId(newdrive.id);
 				result.setErrorCode(0);
 			} catch(GraphServiceException onedriveError) {
             	result.setErrorMsg(onedriveError.getMessage());
@@ -269,15 +268,6 @@ public class Onedrive implements ICloudIO {
                 result.setLongMsg(errors.toString());
     		}
     	}, result);
-    	
-//
-//    	try {
-//			System.out.println("Inside Onedrive func: "+createDirectoryFutureTask.get().getId());
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		} catch (ExecutionException e) {
-//			e.printStackTrace();
-//		}
     	return createDirectoryFutureTask;
     }
 	
@@ -290,13 +280,12 @@ public class Onedrive implements ICloudIO {
     			InputStream stream = (InputStream) graphClient.customRequest("/me/drive/items/"+fileId+"/content", InputStream.class)
     	     			.buildRequest()
     	     			.get();
-    			FileOutputStream fileOS = new FileOutputStream(filePath); {
+    			FileOutputStream fileOS = new FileOutputStream(filePath); 
             	    byte data[] = new byte[1024];
             	    int byteContent;
             	    while ((byteContent = stream.read(data, 0, 1024)) != -1) {
             	        fileOS.write(data, 0, byteContent);
             	    }
-            	} 
         		result.setErrorCode(0);
         		stream.close();
     		} catch(GraphServiceException onedriveError) {
@@ -471,7 +460,6 @@ public class Onedrive implements ICloudIO {
             	Drive drive = graphClient.me().drive()
             			.buildRequest()
             			.get();
-             	System.out.println(drive.id);
              	DriveItemCollectionPage children = graphClient.drives(drive.id).items(directoryId).children()
             			.buildRequest()
             			.get();
@@ -492,7 +480,6 @@ public class Onedrive implements ICloudIO {
                  	{
                 	    try {
                 	    	if (!children.getCurrentPage().get(i).folder.equals(null)){
-                	    		System.out.println(" entering else in for loop in else in try block ");
                 	    		Directory directory = new Directory();
                 	    		directory.setId(children.getCurrentPage().get(i).id);
                 	    		directory.setName(children.getCurrentPage().get(i).name);
