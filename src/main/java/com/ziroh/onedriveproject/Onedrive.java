@@ -96,7 +96,9 @@ public class Onedrive implements ICloudIO {
 		    	
 		    	graphClient.me().drive().items(fileId)
 		    		.buildRequest()
-		    		.patch(driveItem);		    	
+		    		.patch(driveItem);
+		    	
+		    	result.setErrorCode(0);
 			} 
 			catch(GraphServiceException onedriveError) {
             	result.setErrorMsg(onedriveError.getMessage());
@@ -174,6 +176,7 @@ public class Onedrive implements ICloudIO {
                  System.out.println("state: "+drive2.quota.state);
                  System.out.println("total: "+drive2.quota.total);
                  System.out.println("used: "+drive2.quota.used);
+                 result.setErrorCode(0);
             }
             catch(GraphServiceException onedriveError) {
             	result.setErrorMsg(onedriveError.getMessage());
@@ -264,6 +267,14 @@ public class Onedrive implements ICloudIO {
     		}
     	}, result);
     	
+//
+//    	try {
+//			System.out.println("Inside Onedrive func: "+createDirectoryFutureTask.get().getId());
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		} catch (ExecutionException e) {
+//			e.printStackTrace();
+//		}
     	return createDirectoryFutureTask;
     }
 	

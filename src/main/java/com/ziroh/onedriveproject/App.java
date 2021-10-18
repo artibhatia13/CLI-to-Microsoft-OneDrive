@@ -201,7 +201,7 @@ public class App
         printResult(result);
       }
     
-    private static FileUploadResult getResultWhenDone(FutureTask<FileUploadResult> uploadResultFutureTask, String NULL) throws InterruptedException, ExecutionException {
+    private static FileUploadResult getResultWhenDone(final FutureTask<FileUploadResult> uploadResultFutureTask, String NULL) throws InterruptedException, ExecutionException {
         new Thread(uploadResultFutureTask).start();
         new Thread(() -> {
           while(!uploadResultFutureTask.isDone()){
